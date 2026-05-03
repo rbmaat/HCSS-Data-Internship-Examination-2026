@@ -1,0 +1,6 @@
+ParlaMint_processed/ 
+ParlaMint_files/
+.idea/
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
