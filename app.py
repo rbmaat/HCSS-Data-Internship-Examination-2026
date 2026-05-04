@@ -95,6 +95,10 @@ selected_actor_raw = df.loc[
     df["actor_display"] == selected_actor_display, party_col
 ].iloc[0]
 
+view_mode = st.sidebar.radio(
+    "View mode",
+    ["2D Compass", "3D Political Space"]
+)
 
 #st.markdown("## View configuration")
 
@@ -152,53 +156,90 @@ background = (
 # -----------------------------
 st.markdown("## Visualization")
 
-fig = px.scatter(
-    plot_df,
-    x=x_col,
-    y=y_col,
-    color="cluster" if show_clusters else None,
-    custom_data=["actor_display"],
-    opacity=0.9
-)
+# =============================
+# 2D COMPASS (YOUR CURRENT SYSTEM)
+# =============================
+if view_mode == "2D Compass":
 
-fig.update_traces(
-    hovertemplate=(
-        "Actor: %{customdata[0]}<br>"
-        f"{x_col}: %{{x}}<br>"
-        f"{y_col}: %{{y}}<extra></extra>"
-    )
-)
-
-# background layer
-if background is not None:
-    fig.add_scatter(
-        x=background[x_col],
-        y=background[y_col],
-        mode="markers",
-        marker=dict(size=5, opacity=0.12),
-        hoverinfo="skip",
-        showlegend=False
+    fig = px.scatter(
+        plot_df,
+        x=x_col,
+        y=y_col,
+        color="cluster" if show_clusters else None,
+        custom_data=["actor_display"],
+        opacity=0.9
     )
 
-# -----------------------------
-# AXES STYLING
-# -----------------------------
-fig.update_layout(
-    template="simple_white",
-    height=650,
-    showlegend=False,
-    paper_bgcolor="white",
-    plot_bgcolor="white",
-    xaxis_title=x_col,
-    yaxis_title=y_col
-)
+    fig.update_traces(
+        hovertemplate=(
+            "Actor: %{customdata[0]}<br>"
+            f"{x_col}: %{{x}}<br>"
+            f"{y_col}: %{{y}}<extra></extra>"
+        )
+    )
 
-fig.update_xaxes(range=x_range, zeroline=True, zerolinecolor="gray")
-fig.update_yaxes(range=y_range, zeroline=True, zerolinecolor="gray")
+    if background is not None:
+        fig.add_scatter(
+            x=background[x_col],
+            y=background[y_col],
+            mode="markers",
+            marker=dict(size=5, opacity=0.12),
+            hoverinfo="skip",
+            showlegend=False
+        )
 
-fig.update_traces(marker=dict(size=9))
+    fig.update_layout(
+        template="simple_white",
+        height=650,
+        showlegend=False,
+        paper_bgcolor="white",
+        plot_bgcolor="white",
+        xaxis_title=x_col,
+        yaxis_title=y_col
+    )
 
-st.plotly_chart(fig, use_container_width=True)
+    fig.update_xaxes(range=x_range, zeroline=True, zerolinecolor="gray")
+    fig.update_yaxes(range=y_range, zeroline=True, zerolinecolor="gray")
+
+    fig.update_traces(marker=dict(size=9))
+
+    st.plotly_chart(fig, use_container_width=True)
+
+
+# =============================
+# 3D SPACE (ALL 3 VARIABLES)
+# =============================
+else:
+
+    fig = px.scatter_3d(
+        plot_df,
+        x="A_score",
+        y="D_score",
+        z="stance_score",
+        color="cluster" if show_clusters else None,
+        custom_data=["actor_display"],
+        opacity=0.9
+    )
+
+    fig.update_traces(
+        hovertemplate=(
+            "Actor: %{customdata[0]}<br>"
+            "A_score: %{x}<br>"
+            "D_score: %{y}<br>"
+            "Stance: %{z}<extra></extra>"
+        )
+    )
+
+    fig.update_layout(
+        height=700,
+        scene=dict(
+            xaxis_title="A_score",
+            yaxis_title="D_score",
+            zaxis_title="stance_score"
+        )
+    )
+
+    st.plotly_chart(fig, use_container_width=True)
 
 # -----------------------------
 # INTERPRETATION
